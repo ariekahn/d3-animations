@@ -1,0 +1,14 @@
+{
+  "name": "lab-animations",
+  "version": "1.0.0",
+  "description": "Website animations",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Ari Kahn",
+  "license": "ISC",
+  "dependencies": {
+    "eslint": "^5.9.0"
+  }
+}
