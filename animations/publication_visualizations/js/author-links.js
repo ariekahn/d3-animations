@@ -37,12 +37,14 @@ function parseBibfile(x) {
     for (let i in entryNames) {
         let name = entryNames[i];
         entry = b.entries[name]
+        console.log(name)
 
         let paperId = dataset.papers.length;
         let authors = parseAuthors(entry.AUTHOR);
         let tempAuthorList = [];
         for (let j in authors) {
             let authorId = null;
+            console.log(authors[j])
             if (!(authors[j] in authorNames)) {
                 authorId = Object.keys(authorNames).length;
                 authorNames[authors[j]] = {id: authorId, papers: [paperId]};
