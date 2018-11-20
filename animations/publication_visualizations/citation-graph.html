@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        div.tooltip {	
+            position: absolute;			
+            text-align: center;			
+            width: 300px;					
+            height: 56px;					
+            padding: 2px;				
+            font: 12px sans-serif;		
+            background: lightsteelblue;	
+            border: 0px;		
+            border-radius: 8px;			
+            pointer-events: none;			
+        }
+    </style>
+</head>
+<body>
+    <div class="categoricalButtons">Publication Years:</div>
+    <div class="publisherButtons">Publisher:</div>
+    <div id="graph"></div>
+    <div id="barchart"></div>
+    <script src="lib/d3.js"></script>
+    <script src="https://d3js.org/d3-drag.v1.min.js"></script>
+    <script src="https://d3js.org/d3-scale.v2.min.js"></script>
+    <script src="https://d3js.org/d3-drag.v1.min.js"></script>
+    <script src="https://d3js.org/d3-axis.v1.min.js"></script>
+    <script src="lib/bibtex_js.js"></script>
+    <script src="lib/jquery-3.3.1.js"></script>
+    <script src="js/citation-graph.js"></script>
+</body>
+</html>
