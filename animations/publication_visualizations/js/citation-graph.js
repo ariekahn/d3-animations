@@ -2,6 +2,12 @@ var width = 1000,
 height = 600
 // maxRadius = 20;
 
+var yearDims = {width: 500, height: 200};
+var yearMargin = {top: 20, right: 20, bottom: 30, left: 120};
+
+var authorDims = {width: 200, height: 600};
+var authorMargin = {top: 20, right: 20, bottom: 30, left: 120};
+
 const zoom = d3.zoom()
 .scaleExtent([1/4, 9])
 // .translate(width / 2, height/2)
@@ -17,15 +23,25 @@ var svg = d3.select("#graph").append("svg")
 
 var g = svg
 .append('g')
+.attr('transform', 'translate(0,100)')
 
 var barchart = svg
 .append('g')
-.attr('transform', 'translate(400,0)')
+.attr('transform', 'translate(0,0)')
+
+var authorchart = svg
+.append('g')
+.attr('transform', 'translate(700, 0)');
 
 // var barchart = d3.select("#barchart").append("svg")
 // .attr("width", 400)
 // .attr("height", height)
 // .append("g")
+
+function parseAuthors(authorsRaw) {
+    let authors = authorsRaw.split(' and ');
+    return authors;
+}
 
 var div = d3.select("body").append("div")	
 .attr("class", "tooltip")				
@@ -36,43 +52,49 @@ var d;
 d3.json('data/dsb_citations_full.json')
 .then( (dataset) => {
     
+    // Get rid of some garbage data
     dataset = dataset.filter(x => x.bib.year >= 2006)
+    dataset = dataset.filter(x => x.bib.author)
+
+    // Parse authors
+    dataset.forEach(item => {
+        item.authors = parseAuthors(item.bib.author);
+    })
+    
+    // Make it globally available for debug
     d = dataset;
     
     let years = d.map(x => x.bib.year).filter(Boolean)
     // get unique years
     years = Array.from(new Set(years)).sort()
-    maxYear = Math.max(...years) 
-    minYear = Math.min(...years)
+    const maxYear = Math.max(...years) 
+    const minYear = Math.min(...years)
     m = maxYear - minYear; // number of clusters
     years.unshift('All');
     
-    var clusters = new Array(m);
+    const clusters = new Array(m);
     
-    var color = d3.scaleOrdinal(d3.schemeCategory10)
+    const color = d3.scaleOrdinal(d3.schemeCategory10)
     .domain(d3.range(m));
     
     // var yearToCluster = {};
 
     function sizeBy(f) {
-        for (let i = 0; i < dataset.length; i++) {
-            r = f(dataset[i]);
-            dataset[i].radius = r;
-        }
+        dataset.forEach(item => item.radius = f(item));
     }
 
     function groupBy(f) {
+        dataset.forEach(item => item.cluster = f(item));
         for (let i = 0; i < dataset.length; i++) {
-            cluster = f(dataset[i]);
-            dataset[i].cluster = cluster;
-            if (!clusters[cluster] || (r > clusters[cluster].radius)) clusters[cluster] = dataset[i];
+            cluster = dataset[i].cluster;
+            if (!clusters[cluster] || (dataset[i].radius > clusters[cluster].radius)) clusters[cluster] = dataset[i];
         }
     }
 
     function updateSize() {
         nodes
         .transition()
-        .attr('r', d => d.r);
+        .attr('r', d => d.radius);
     }
     
     function updateColor() {
@@ -81,23 +103,20 @@ d3.json('data/dsb_citations_full.json')
         .style("fill", d => color(d.cluster))
     }
 
-    // d = dataset;
+    sizeBy(x => Math.max(1, x.citedby/20));
+    groupBy(x => x.bib.year - minYear);
+
+    // Set x and y
     for (let i = 0; i < dataset.length; i++) {
-        cluster = dataset[i].bib.year - minYear;
-        r = dataset[i].citedby/20;
-        r = Math.max(r,1);
-        
-        dataset[i].cluster = cluster;
         dataset[i].x = width/2;
         dataset[i].y = height/2;
-        dataset[i].radius = r;
         dataset[i].opacity = 1;
-        // dataset[i].radius = Math.sqrt(dataset[i].citedby)/5
         if (isNaN(dataset[i].radius)) {
-            dataset[i].radius = 0
+            dataset[i].radius = 1
         }
-        if (!clusters[cluster] || (r > clusters[cluster].radius)) clusters[cluster] = dataset[i];
     }
+
+
     
     var forceCollide = d3.forceCollide(10)
     .radius( d => d.radius + 1.5)
@@ -187,6 +206,8 @@ d3.json('data/dsb_citations_full.json')
         
         bars.transition()
         .attr("opacity", d => d.opacity)
+
+        showAllAuthors(year)
     }
     
     var yearButtons = d3.select(".categoricalButtons")
@@ -216,32 +237,32 @@ d3.json('data/dsb_citations_full.json')
     }
     
     // Publishers
-    var publishers = dataset.map(x => x.bib.publisher).filter(Boolean);
-    publishers = Array.from(new Set(publishers)).sort();
-    publishers.unshift('All');
-    publishers = publishers.map(x => x.toLowerCase());
+    // var publishers = dataset.map(x => x.bib.publisher).filter(Boolean);
+    // publishers = Array.from(new Set(publishers)).sort();
+    // publishers.unshift('All');
+    // publishers = publishers.map(x => x.toLowerCase());
     
-    var publisherButtons = d3.select(".publisherButtons")
-    .selectAll("button")
-    .data(publishers)
-    .enter().append("button")
-    .text(function(d) { return d; })
-    .on("click", function(buttonValue) {
-        selectPublisher(buttonValue);
-    });
+    // var publisherButtons = d3.select(".publisherButtons")
+    // .selectAll("button")
+    // .data(publishers)
+    // .enter().append("button")
+    // .text(function(d) { return d; })
+    // .on("click", function(buttonValue) {
+    //     selectPublisher(buttonValue);
+    // });
     
-    function selectPublisher(publisher) {
-        for (let i = 0; i < dataset.length; i++) {
-            if (publisher === 'all' || (dataset[i].bib.publisher && dataset[i].bib.publisher.toLowerCase() === publisher)) {
-                dataset[i].opacity = 1.0;
-            } else {
-                dataset[i].opacity = 0.2;
-            }
-        }
+    // function selectPublisher(publisher) {
+    //     for (let i = 0; i < dataset.length; i++) {
+    //         if (publisher === 'all' || (dataset[i].bib.publisher && dataset[i].bib.publisher.toLowerCase() === publisher)) {
+    //             dataset[i].opacity = 1.0;
+    //         } else {
+    //             dataset[i].opacity = 0.2;
+    //         }
+    //     }
         
-        nodes.transition()
-        .attr("opacity", d => d.opacity)
-    }
+    //     nodes.transition()
+    //     .attr("opacity", d => d.opacity)
+    // }
     
     
     //https://beta.observablehq.com/@mbostock/d3-histogram
@@ -330,5 +351,68 @@ d3.json('data/dsb_citations_full.json')
     //     .attr("text-anchor", "start")
     //     .attr("font-weight", "bold")
     //     .text(bins.y0   )
+
+
+    let authorYAxis = authorchart
+    .append('g')
+    // .attr('transform', 'translate(500,0)')
+
+    function showAllAuthors(year) {
+        authorList = [];
+        for (let i = 0; i < dataset.length; i++) {
+            for (let j = 0; j < dataset[i].authors.length; j++) {
+                if (year == 'All' || dataset[i].bib.year == year) {
+                    authorList.push({year: dataset[i].bib.year, author: dataset[i].authors[j]});
+                }
+            }
+        }
+
+        authors = d3.nest().key(x => x.author).entries(authorList);
+        authors = authors.sort((x,y) => y.values.length - x.values.length);
+
+        let authorY = d3.scaleBand()
+        .domain(authors.map(x => x.key))
+        .range([0, authors.length*20])
+        
+        
+        // authorBins = d3.histogram()
+        // .value(d => d.values.year)
+        // .domain(authorY.domain())
+        // .thresholds(authorY.ticks(authorY.domain()[1] - authorY.domain()[0]))
+        // (authors)
+
+        var a = authorchart.selectAll('rect')
+        .data(authors);
+
+        a
+        .enter()
+        .append('rect')
+        .attr('width', d => d.values.length+10)
+        .attr('height', 15)
+        .attr('x', 0)
+        .attr('y', d=>authorY(d.key))
+        .attr('fill','blue')
+        .merge(a)
+        .attr('width', d => d.values.length+10)
+
+        a.exit().remove();
+
+        let yAxis = authorYAxis
+        .call(d3.axisLeft(authorY))
+
+        // authorchart
+        // .selectAll('text')
+        // .data(authors)
+        // .enter()
+        // .attr('x', d=>500-(d.values.length+10))
+        // .attr('y', d=>authorY(d.key)*20)
+    }
+    showAllAuthors('All')
+
+    // var authorBins = d3.histogram()
+    // .value(d => d.author)
+    // .domain(x.domain())
+    // .thresholds(x.ticks(x.domain()[1] - x.domain()[0]))
+    // (dataset)
     
 });
