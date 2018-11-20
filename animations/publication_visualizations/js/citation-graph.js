@@ -1,5 +1,8 @@
-var width = 1000,
-height = 600
+var fullWidth = 1000,
+    fullHeight = 800;
+
+var width = 600,
+    height = 600
 // maxRadius = 20;
 
 var yearDims = {width: 500, height: 200};
@@ -14,9 +17,10 @@ const zoom = d3.zoom()
 .on('zoom', function () {
     d3.select('g').attr('transform', d3.event.transform)
 });
+
 var svg = d3.select("#graph").append("svg")
-.attr("width", width)
-.attr("height", height)
+.attr("width", fullWidth)
+.attr("height", fullHeight)
 .attr('transform', 'translate(' + width/2 + ',' + height / 2 + ')')
 // .call(zoom.transform, d3.zoomIdentity.translate(width/2, height/2).scale(0.5))
 .call(zoom)
