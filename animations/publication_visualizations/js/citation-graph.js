@@ -232,7 +232,7 @@ d3.json('data/dsb_citations_full.json')
     
     function selectPublisher(publisher) {
         for (let i = 0; i < dataset.length; i++) {
-            if (publisher === 'All' || (dataset[i].bib.publisher && dataset[i].bib.publisher.toLowerCase() === publisher)) {
+            if (publisher === 'all' || (dataset[i].bib.publisher && dataset[i].bib.publisher.toLowerCase() === publisher)) {
                 dataset[i].opacity = 1.0;
             } else {
                 dataset[i].opacity = 0.2;
