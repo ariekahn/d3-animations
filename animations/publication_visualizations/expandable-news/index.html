@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <style>
+        p.expand {
+            display:none;
+        }
+        #demo {
+            background-color: lightgray;
+            display: inline;
+        }
+    </style>
+</head>
+<body>
+    <div id="news">
+    <p>News Item 1</p>
+    <p class="expand">News Item 2</p>
+    <p class="expand">News Item 3</p>
+    <p class="expand">News Item 4</p>
+    <p class="expand">News Item 5</p>
+    <p class="expand">News Item 6</p>
+    <p class="expand">News Item 7</p>
+    </div>
+    <p id="showmore" onclick="show(2)">Click me.</p>
+
+    <script>
+    var newsInd = 2;
+    var show = function(n) {
+        for (var i = 0; i < n; i++) {
+            $(`#news p:nth-child(${newsInd})`).show();
+            newsInd += 1;
+            if (newsInd > $('#news p').length) {
+                $('#showmore').hide();
+                break;
+            }
+        }
+    }
+    </script>
+</body>
+<script></script>
+</html>
